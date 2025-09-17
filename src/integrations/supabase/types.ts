@@ -14,16 +14,370 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          farm_type: Database["public"]["Enums"]["farm_type"] | null
+          id: string
+          is_active: boolean
+          location: string | null
+          message: string
+          severity: Database["public"]["Enums"]["alert_severity"]
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          farm_type?: Database["public"]["Enums"]["farm_type"] | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          message: string
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          farm_type?: Database["public"]["Enums"]["farm_type"] | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          message?: string
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          title?: string
+        }
+        Relationships: []
+      }
+      biosecurity_assessments: {
+        Row: {
+          assessment_data: Json
+          assessor_id: string
+          completed_at: string | null
+          created_at: string
+          farm_id: string
+          id: string
+          recommendations: string | null
+          risk_score: number | null
+          status: Database["public"]["Enums"]["assessment_status"]
+          updated_at: string
+        }
+        Insert: {
+          assessment_data?: Json
+          assessor_id: string
+          completed_at?: string | null
+          created_at?: string
+          farm_id: string
+          id?: string
+          recommendations?: string | null
+          risk_score?: number | null
+          status?: Database["public"]["Enums"]["assessment_status"]
+          updated_at?: string
+        }
+        Update: {
+          assessment_data?: Json
+          assessor_id?: string
+          completed_at?: string | null
+          created_at?: string
+          farm_id?: string
+          id?: string
+          recommendations?: string | null
+          risk_score?: number | null
+          status?: Database["public"]["Enums"]["assessment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "biosecurity_assessments_farm_id_fkey"
+            columns: ["farm_id"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_records: {
+        Row: {
+          checked_at: string
+          checked_by: string
+          checklist_item: string
+          created_at: string
+          evidence_url: string | null
+          farm_id: string
+          id: string
+          is_compliant: boolean
+          notes: string | null
+        }
+        Insert: {
+          checked_at?: string
+          checked_by: string
+          checklist_item: string
+          created_at?: string
+          evidence_url?: string | null
+          farm_id: string
+          id?: string
+          is_compliant?: boolean
+          notes?: string | null
+        }
+        Update: {
+          checked_at?: string
+          checked_by?: string
+          checklist_item?: string
+          created_at?: string
+          evidence_url?: string | null
+          farm_id?: string
+          id?: string
+          is_compliant?: boolean
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_records_farm_id_fkey"
+            columns: ["farm_id"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      farms: {
+        Row: {
+          animal_count: number | null
+          coordinates: unknown | null
+          created_at: string
+          farm_type: Database["public"]["Enums"]["farm_type"]
+          id: string
+          location: string
+          name: string
+          owner_id: string
+          registration_number: string | null
+          size_hectares: number | null
+          updated_at: string
+        }
+        Insert: {
+          animal_count?: number | null
+          coordinates?: unknown | null
+          created_at?: string
+          farm_type: Database["public"]["Enums"]["farm_type"]
+          id?: string
+          location: string
+          name: string
+          owner_id: string
+          registration_number?: string | null
+          size_hectares?: number | null
+          updated_at?: string
+        }
+        Update: {
+          animal_count?: number | null
+          coordinates?: unknown | null
+          created_at?: string
+          farm_type?: Database["public"]["Enums"]["farm_type"]
+          id?: string
+          location?: string
+          name?: string
+          owner_id?: string
+          registration_number?: string | null
+          size_hectares?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          location: string | null
+          organization: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          id?: string
+          last_name: string
+          location?: string | null
+          organization?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          location?: string | null
+          organization?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      training_modules: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string
+          description: string | null
+          duration_minutes: number | null
+          farm_type: Database["public"]["Enums"]["farm_type"] | null
+          id: string
+          is_published: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          created_by: string
+          description?: string | null
+          duration_minutes?: number | null
+          farm_type?: Database["public"]["Enums"]["farm_type"] | null
+          id?: string
+          is_published?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          duration_minutes?: number | null
+          farm_type?: Database["public"]["Enums"]["farm_type"] | null
+          id?: string
+          is_published?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_alerts: {
+        Row: {
+          alert_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_alerts_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_training_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          module_id: string
+          progress_percentage: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id: string
+          progress_percentage?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id?: string
+          progress_percentage?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_training_progress_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      alert_severity: "low" | "medium" | "high" | "critical"
+      app_role:
+        | "farmer"
+        | "veterinarian"
+        | "extension_worker"
+        | "regulator"
+        | "researcher"
+      assessment_status: "draft" | "completed" | "reviewed"
+      farm_type: "pig" | "poultry" | "mixed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +504,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      alert_severity: ["low", "medium", "high", "critical"],
+      app_role: [
+        "farmer",
+        "veterinarian",
+        "extension_worker",
+        "regulator",
+        "researcher",
+      ],
+      assessment_status: ["draft", "completed", "reviewed"],
+      farm_type: ["pig", "poultry", "mixed"],
+    },
   },
 } as const

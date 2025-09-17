@@ -43,7 +43,7 @@ const UserRoleCard = ({ title, description, features, icon: Icon, color }: UserR
             </li>
           ))}
         </ul>
-        <Button className="w-full mt-6">
+        <Button className="w-full mt-6" onClick={() => window.location.href = '/auth'}>
           Register as {title}
         </Button>
       </CardContent>
