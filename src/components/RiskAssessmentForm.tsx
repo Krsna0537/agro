@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { getRADict } from "@/components/dashboards/risk_assessment.i18n";
 
 interface Farm {
   id: string;
@@ -20,46 +21,46 @@ interface RiskAssessmentFormProps {
   farm: Farm;
 }
 
-const assessmentQuestions = [
+const assessmentQuestionsBase = [
   {
     id: "biosecurity_plan",
-    question: "Do you have a written biosecurity plan?",
-    category: "Planning"
+    key: "q_biosecurity_plan",
+    categoryKey: "category_Planning"
   },
   {
     id: "visitor_control",
-    question: "Do you control and record all farm visitors?",
-    category: "Access Control"
+    key: "q_visitor_control",
+    categoryKey: "category_Access"
   },
   {
     id: "vehicle_disinfection",
-    question: "Are all vehicles disinfected before entering the farm?",
-    category: "Sanitation"
+    key: "q_vehicle_disinfection",
+    categoryKey: "category_Sanitation"
   },
   {
     id: "feed_storage",
-    question: "Is feed stored in secure, pest-proof containers?",
-    category: "Feed Security"
+    key: "q_feed_storage",
+    categoryKey: "category_Feed"
   },
   {
     id: "water_quality",
-    question: "Is water quality regularly tested and treated if necessary?",
-    category: "Water Management"
+    key: "q_water_quality",
+    categoryKey: "category_Water"
   },
   {
     id: "waste_management",
-    question: "Do you have proper dead animal disposal procedures?",
-    category: "Waste Management"
+    key: "q_waste_management",
+    categoryKey: "category_Waste"
   },
   {
     id: "quarantine_facilities",
-    question: "Do you have quarantine facilities for new animals?",
-    category: "Animal Health"
+    key: "q_quarantine_facilities",
+    categoryKey: "category_Health"
   },
   {
     id: "staff_training",
-    question: "Are all staff trained in biosecurity protocols?",
-    category: "Human Resources"
+    key: "q_staff_training",
+    categoryKey: "category_HR"
   }
 ];
 
@@ -68,6 +69,13 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const locale = (localStorage.getItem('farmer_locale') as any) || 'en';
+  const t = useMemo(() => getRADict(locale), [locale]);
+  const assessmentQuestions = useMemo(() => assessmentQuestionsBase.map(q => ({
+    ...q,
+    question: t[q.key],
+    category: t[q.categoryKey],
+  })), [t]);
 
   const handleResponseChange = (questionId: string, value: string) => {
     setResponses(prev => ({
@@ -83,9 +91,9 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
   };
 
   const getRiskLevel = (score: number) => {
-    if (score >= 80) return { level: "Low", color: "success", icon: CheckCircle };
-    if (score >= 60) return { level: "Medium", color: "warning", icon: AlertTriangle };
-    return { level: "High", color: "destructive", icon: XCircle };
+    if (score >= 80) return { level: t.low, color: "success", icon: CheckCircle };
+    if (score >= 60) return { level: t.medium, color: "warning", icon: AlertTriangle };
+    return { level: t.high, color: "destructive", icon: XCircle };
   };
 
   const getProgress = () => {
@@ -95,7 +103,7 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
 
   const handleSubmit = async () => {
     if (Object.keys(responses).length < assessmentQuestions.length) {
-      toast.error("Please answer all questions before submitting");
+      toast.error(t.complete);
       return;
     }
 
@@ -128,9 +136,9 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
       if (error) throw error;
 
       setCompleted(true);
-      toast.success("Risk assessment completed successfully!");
+      toast.success(t.completed);
     } catch (error: any) {
-      toast.error("Error saving assessment");
+      toast.error(t.saving);
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -146,7 +154,7 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-success" />
-            Assessment Completed
+            {t.completed}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -156,19 +164,17 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
               <div>
                 <div className="text-3xl font-bold">{riskScore}%</div>
                 <Badge variant={color as any} className="mt-2">
-                  {level} Risk
+                  {level} {t.risk}
                 </Badge>
               </div>
             </div>
           </div>
           
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Recommendations</h3>
+            <h3 className="text-lg font-semibold">{t.recommendations}</h3>
             {riskScore < 80 && (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Based on your assessment, consider improving these areas:
-                </p>
+                <p className="text-sm text-muted-foreground">{t.improveAreas}</p>
                 <ul className="list-disc pl-5 space-y-1 text-sm">
                   {assessmentQuestions
                     .filter(q => responses[q.id] !== "yes")
@@ -180,7 +186,7 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
             )}
             {notes && (
               <div>
-                <h4 className="font-medium mb-2">Additional Notes:</h4>
+                <h4 className="font-medium mb-2">{t.additionalNotes}</h4>
                 <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
                   {notes}
                 </p>
@@ -189,7 +195,7 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
           </div>
           
           <Button onClick={() => setCompleted(false)} variant="outline" className="w-full">
-            Take Another Assessment
+            {t.takeAnother}
           </Button>
         </CardContent>
       </Card>
@@ -200,11 +206,11 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Biosecurity Risk Assessment - {farm.name}</CardTitle>
+          <CardTitle>{t.title} - {farm.name}</CardTitle>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Progress</span>
-              <span>{Object.keys(responses).length} of {assessmentQuestions.length}</span>
+              <span>{t.progress}</span>
+              <span>{Object.keys(responses).length} {t.of} {assessmentQuestions.length}</span>
             </div>
             <Progress value={getProgress()} />
           </div>
@@ -230,15 +236,15 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="yes" id={`${question.id}-yes`} />
-                    <Label htmlFor={`${question.id}-yes`}>Yes</Label>
+                    <Label htmlFor={`${question.id}-yes`}>{t.yes}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="no" id={`${question.id}-no`} />
-                    <Label htmlFor={`${question.id}-no`}>No</Label>
+                    <Label htmlFor={`${question.id}-no`}>{t.no}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="partial" id={`${question.id}-partial`} />
-                    <Label htmlFor={`${question.id}-partial`}>Partially</Label>
+                    <Label htmlFor={`${question.id}-partial`}>{t.partial}</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -250,10 +256,10 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            <Label htmlFor="notes">Additional Notes or Observations</Label>
+            <Label htmlFor="notes">{t.notesLabel}</Label>
             <Textarea
               id="notes"
-              placeholder="Add any additional observations or specific challenges you face..."
+              placeholder={t.notesPlaceholder}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={4}
@@ -268,7 +274,7 @@ const RiskAssessmentForm = ({ farm }: RiskAssessmentFormProps) => {
         className="w-full"
         size="lg"
       >
-        {loading ? "Saving..." : "Complete Assessment"}
+        {loading ? t.saving : t.complete}
       </Button>
     </div>
   );

@@ -49,7 +49,8 @@ const Auth = () => {
           data: {
             first_name: firstName,
             last_name: lastName,
-            organization: organization
+            organization: organization,
+            signup_role: role
           }
         }
       });
@@ -57,17 +58,7 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.user) {
-        // Insert user role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: data.user.id,
-            role: role as 'farmer' | 'veterinarian' | 'extension_worker' | 'regulator' | 'researcher'
-          });
-
-        if (roleError) throw roleError;
-
-        toast.success("Account created successfully! Please check your email to verify your account.");
+        toast.success("Account created! Please verify your email, then sign in.");
       }
     } catch (error: any) {
       toast.error(error.message);

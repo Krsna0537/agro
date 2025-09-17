@@ -22,6 +22,8 @@ import RiskAssessmentForm from "@/components/RiskAssessmentForm";
 import TrainingModules from "@/components/TrainingModules";
 import ComplianceTracker from "@/components/ComplianceTracker";
 import AlertsPanel from "@/components/AlertsPanel";
+import { useNavigate } from "react-router-dom";
+import { farmerDict, farmerLanguages, FarmerLocale } from "./farmer.i18n";
 
 interface Farm {
   id: string;
@@ -40,6 +42,9 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
   const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [locale, setLocale] = useState<FarmerLocale>(() => (localStorage.getItem('farmer_locale') as FarmerLocale) || 'en');
+  const t = farmerDict[locale];
 
   useEffect(() => {
     fetchFarms();
@@ -76,11 +81,11 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
   };
 
   const sidebarItems = [
-    { id: "overview", label: "Overview", icon: Home },
-    { id: "assessment", label: "Risk Assessment", icon: AlertTriangle },
-    { id: "training", label: "Training", icon: BookOpen },
-    { id: "compliance", label: "Compliance", icon: CheckCircle },
-    { id: "alerts", label: "Alerts", icon: Bell },
+    { id: "overview", label: t.overview, icon: Home },
+    { id: "assessment", label: t.assessment, icon: AlertTriangle },
+    { id: "training", label: t.training, icon: BookOpen },
+    { id: "compliance", label: t.compliance, icon: CheckCircle },
+    { id: "alerts", label: t.alerts, icon: Bell },
   ];
 
   const renderContent = () => {
@@ -90,7 +95,7 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
           <RiskAssessmentForm farm={selectedFarm} />
         ) : (
           <div className="text-center py-8">
-            <p>Please select a farm to start assessment</p>
+            <p>{t.selectFarmForAssessment}</p>
           </div>
         );
       
@@ -102,7 +107,7 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
           <ComplianceTracker farm={selectedFarm} />
         ) : (
           <div className="text-center py-8">
-            <p>Please select a farm to view compliance</p>
+            <p>{t.selectFarmForCompliance}</p>
           </div>
         );
       
@@ -115,7 +120,7 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Farms</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t.totalFarms}</CardTitle>
                   <Tractor className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -125,7 +130,7 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Risk Score</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t.riskScore}</CardTitle>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -136,7 +141,7 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Training Progress</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t.trainingProgress}</CardTitle>
                   <BookOpen className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -149,10 +154,10 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  My Farms
-                  <Button size="sm">
+                  {t.myFarms}
+                  <Button size="sm" onClick={() => navigate('/farms')}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Farm
+                    {t.addFarm}
                   </Button>
                 </CardTitle>
               </CardHeader>
@@ -160,13 +165,11 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
                 {farms.length === 0 ? (
                   <div className="text-center py-8">
                     <Tractor className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No farms registered</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Get started by registering your first farm
-                    </p>
-                    <Button>
+                    <h3 className="text-lg font-semibold mb-2">{t.noFarmsTitle}</h3>
+                    <p className="text-muted-foreground mb-4">{t.noFarmsSubtitle}</p>
+                    <Button onClick={() => navigate('/farms')}>
                       <Plus className="h-4 w-4 mr-2" />
-                      Register Farm
+                      {t.registerFarm}
                     </Button>
                   </div>
                 ) : (
@@ -189,7 +192,7 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
                               {farm.farm_type}
                             </Badge>
                             <p className="text-sm text-muted-foreground">
-                              {farm.animal_count} animals
+                              {farm.animal_count} {t.animals}
                             </p>
                           </div>
                         </div>
@@ -210,13 +213,31 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
 
   return (
     <DashboardLayout
-      title="Farmer Dashboard"
+      title={t.title}
       user={user}
       sidebarItems={sidebarItems}
       activeTab={activeTab}
       onTabChange={setActiveTab}
       onSignOut={handleSignOut}
     >
+      <div className="flex items-center justify-end mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Language:</span>
+          <select
+            className="border rounded-md p-1 bg-background"
+            value={locale}
+            onChange={(e) => {
+              const next = e.target.value as FarmerLocale;
+              setLocale(next);
+              localStorage.setItem('farmer_locale', next);
+            }}
+          >
+            {farmerLanguages.map((l) => (
+              <option key={l.code} value={l.code}>{l.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
       {renderContent()}
     </DashboardLayout>
   );

@@ -34,19 +34,23 @@ export const useAuth = () => {
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      if (profileError) throw profileError;
-      setProfile(profileData);
+      if (profileError && profileData) {
+        console.warn('Profile fetch warning:', profileError);
+      }
+      setProfile(profileData ?? null);
 
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      if (roleError) throw roleError;
-      setUserRole(roleData);
+      if (roleError && roleData) {
+        console.warn('Role fetch warning:', roleError);
+      }
+      setUserRole(roleData ?? null);
     } catch (error) {
       console.error('Error fetching user data:', error);
     }

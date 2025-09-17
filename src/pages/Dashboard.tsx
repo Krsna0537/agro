@@ -25,24 +25,52 @@ const Dashboard = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user role
+          // Ensure role exists; if missing, create from metadata
           setTimeout(async () => {
             try {
-              const { data: roles, error } = await supabase
+              let { data: roles, error } = await supabase
                 .from('user_roles')
                 .select('role')
                 .eq('user_id', session.user.id)
-                .single();
+                .maybeSingle();
 
-              if (error) {
-                console.error('Error fetching user role:', error);
-                toast.error('Error loading user role');
-                return;
+              // If no role found, try to create from signup metadata
+              if (!roles) {
+                const signupRole = (session.user.user_metadata as any)?.signup_role as
+                  | 'farmer'
+                  | 'veterinarian'
+                  | 'extension_worker'
+                  | 'regulator'
+                  | 'researcher'
+                  | undefined;
+                if (signupRole) {
+                  const { error: insertErr } = await supabase.from('user_roles').insert({
+                    user_id: session.user.id,
+                    role: signupRole,
+                  });
+                  if (!insertErr) {
+                    const { data: reRead } = await supabase
+                      .from('user_roles')
+                      .select('role')
+                      .eq('user_id', session.user.id)
+                      .maybeSingle();
+                    roles = reRead as any;
+                  } else {
+                    console.error('Error inserting user role:', insertErr);
+                    toast.error('Error loading user role');
+                    return;
+                  }
+                }
+              }
+
+              if (error && roles) {
+                console.warn('Role fetch returned with error but data present:', error);
               }
 
               setUserRole(roles?.role || null);
             } catch (error) {
               console.error('Error in role fetch:', error);
+              toast.error('Error loading user role');
             } finally {
               setLoading(false);
             }

@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Shield, Menu } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="bg-card border-b shadow-sm">
@@ -25,8 +27,8 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm">Sign In</Button>
-            <Button size="sm">Get Started</Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>Sign In</Button>
+            <Button size="sm" onClick={() => navigate('/auth')}>Get Started</Button>
             <Button
               variant="ghost"
               size="sm"

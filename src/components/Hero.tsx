@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, TrendingUp, Users } from "lucide-react";
 import farmHeroImage from "@/assets/farm-hero.jpg";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative bg-gradient-hero text-primary-foreground">
       <div className="absolute inset-0 bg-black/20"></div>
@@ -36,11 +38,11 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" variant="secondary" className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button size="lg" variant="secondary" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => navigate('/auth')}>
                 Start Free Trial
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+              <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => navigate('/auth')}>
                 Watch Demo
               </Button>
             </div>
