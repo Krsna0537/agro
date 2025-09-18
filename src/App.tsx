@@ -10,6 +10,10 @@ import NotFound from "./pages/NotFound";
 import Farms from "./pages/Farms";
 import TrainingAdmin from "./pages/TrainingAdmin";
 import AlertsAdmin from "./pages/AlertsAdmin";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import FAQ from "./pages/FAQ";
+import Pricing from "./pages/Pricing";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import RoleGuard from "@/components/auth/RoleGuard";
 
@@ -24,6 +28,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route
             path="/dashboard"
             element={

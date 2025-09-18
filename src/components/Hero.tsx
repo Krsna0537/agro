@@ -42,9 +42,6 @@ const Hero = () => {
                 Start Free Trial
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => navigate('/auth')}>
-                Watch Demo
-              </Button>
             </div>
 
             <div className="grid grid-cols-3 gap-6 pt-6">

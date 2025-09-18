@@ -15,45 +15,47 @@ import {
   Users,
   TrendingUp
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
     product: [
-      { name: "Features", href: "#features" },
-      { name: "Pricing", href: "#pricing" },
-      { name: "API Documentation", href: "#api" },
-      { name: "Integrations", href: "#integrations" },
-      { name: "Mobile App", href: "#mobile" }
+      { name: "Features", href: "#features", onClick: null },
+      { name: "Pricing", href: "/pricing", onClick: () => navigate('/pricing') },
+      { name: "API Documentation", href: "#api", onClick: null },
+      { name: "Integrations", href: "#integrations", onClick: null },
+      { name: "Mobile App", href: "#mobile", onClick: null }
     ],
     solutions: [
-      { name: "Pig Farming", href: "#pig-farming" },
-      { name: "Poultry Production", href: "#poultry" },
-      { name: "Mixed Livestock", href: "#mixed" },
-      { name: "Veterinary Services", href: "#veterinary" },
-      { name: "Extension Services", href: "#extension" }
+      { name: "Pig Farming", href: "#pig-farming", onClick: null },
+      { name: "Poultry Production", href: "#poultry", onClick: null },
+      { name: "Mixed Livestock", href: "#mixed", onClick: null },
+      { name: "Veterinary Services", href: "#veterinary", onClick: null },
+      { name: "Extension Services", href: "#extension", onClick: null }
     ],
     resources: [
-      { name: "Help Center", href: "#help" },
-      { name: "Training Materials", href: "#training" },
-      { name: "Case Studies", href: "#cases" },
-      { name: "White Papers", href: "#papers" },
-      { name: "Blog", href: "#blog" }
+      { name: "Help Center", href: "/faq", onClick: () => navigate('/faq') },
+      { name: "Training Materials", href: "#training", onClick: null },
+      { name: "Case Studies", href: "#cases", onClick: null },
+      { name: "White Papers", href: "#papers", onClick: null },
+      { name: "Blog", href: "#blog", onClick: null }
     ],
     company: [
-      { name: "About Us", href: "#about" },
-      { name: "Careers", href: "#careers" },
-      { name: "Partners", href: "#partners" },
-      { name: "Press", href: "#press" },
-      { name: "Contact", href: "#contact" }
+      { name: "About Us", href: "/about", onClick: () => navigate('/about') },
+      { name: "Careers", href: "#careers", onClick: null },
+      { name: "Partners", href: "#partners", onClick: null },
+      { name: "Press", href: "#press", onClick: null },
+      { name: "Contact", href: "/contact", onClick: () => navigate('/contact') }
     ],
     legal: [
-      { name: "Privacy Policy", href: "#privacy" },
-      { name: "Terms of Service", href: "#terms" },
-      { name: "Cookie Policy", href: "#cookies" },
-      { name: "GDPR Compliance", href: "#gdpr" },
-      { name: "Data Security", href: "#security" }
+      { name: "Privacy Policy", href: "#privacy", onClick: null },
+      { name: "Terms of Service", href: "#terms", onClick: null },
+      { name: "Cookie Policy", href: "#cookies", onClick: null },
+      { name: "GDPR Compliance", href: "#gdpr", onClick: null },
+      { name: "Data Security", href: "#security", onClick: null }
     ]
   };
 
@@ -148,12 +150,21 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.product.map((link, index) => (
                   <li key={index}>
-                    <a 
-                      href={link.href} 
-                      className="text-slate-300 hover:text-accent transition-colors"
-                    >
-                      {link.name}
-                    </a>
+                    {link.onClick ? (
+                      <button 
+                        onClick={link.onClick} 
+                        className="text-slate-300 hover:text-accent transition-colors text-left"
+                      >
+                        {link.name}
+                      </button>
+                    ) : (
+                      <a 
+                        href={link.href} 
+                        className="text-slate-300 hover:text-accent transition-colors"
+                      >
+                        {link.name}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -165,12 +176,21 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.solutions.map((link, index) => (
                   <li key={index}>
-                    <a 
-                      href={link.href} 
-                      className="text-slate-300 hover:text-accent transition-colors"
-                    >
-                      {link.name}
-                    </a>
+                    {link.onClick ? (
+                      <button 
+                        onClick={link.onClick} 
+                        className="text-slate-300 hover:text-accent transition-colors text-left"
+                      >
+                        {link.name}
+                      </button>
+                    ) : (
+                      <a 
+                        href={link.href} 
+                        className="text-slate-300 hover:text-accent transition-colors"
+                      >
+                        {link.name}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -182,12 +202,21 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.resources.map((link, index) => (
                   <li key={index}>
-                    <a 
-                      href={link.href} 
-                      className="text-slate-300 hover:text-accent transition-colors"
-                    >
-                      {link.name}
-                    </a>
+                    {link.onClick ? (
+                      <button 
+                        onClick={link.onClick} 
+                        className="text-slate-300 hover:text-accent transition-colors text-left"
+                      >
+                        {link.name}
+                      </button>
+                    ) : (
+                      <a 
+                        href={link.href} 
+                        className="text-slate-300 hover:text-accent transition-colors"
+                      >
+                        {link.name}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -199,12 +228,21 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.company.map((link, index) => (
                   <li key={index}>
-                    <a 
-                      href={link.href} 
-                      className="text-slate-300 hover:text-accent transition-colors"
-                    >
-                      {link.name}
-                    </a>
+                    {link.onClick ? (
+                      <button 
+                        onClick={link.onClick} 
+                        className="text-slate-300 hover:text-accent transition-colors text-left"
+                      >
+                        {link.name}
+                      </button>
+                    ) : (
+                      <a 
+                        href={link.href} 
+                        className="text-slate-300 hover:text-accent transition-colors"
+                      >
+                        {link.name}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>

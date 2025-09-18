@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,14 @@ import {
   Plus,
   Bell,
   Home,
-  LogOut
+  LogOut,
+  Activity,
+  Shield,
+  Target,
+  Users,
+  Calendar,
+  MapPin,
+  BarChart3
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import RiskAssessmentForm from "@/components/RiskAssessmentForm";
@@ -24,6 +32,11 @@ import ComplianceTracker from "@/components/ComplianceTracker";
 import AlertsPanel from "@/components/AlertsPanel";
 import { useNavigate } from "react-router-dom";
 import { farmerDict, farmerLanguages, FarmerLocale } from "./farmer.i18n";
+import { AnimatedCard, StatCard } from "@/components/ui/animated-card";
+import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
+import { ProgressRing } from "@/components/ui/progress-ring";
+import { MetricCard, BarChart, TrendChart } from "@/components/ui/data-visualization";
+import { fadeInUp, staggerContainer, slideInFromTop } from "@/lib/animations";
 
 interface Farm {
   id: string;
@@ -92,70 +105,202 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
     switch (activeTab) {
       case "assessment":
         return selectedFarm ? (
-          <RiskAssessmentForm farm={selectedFarm} />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <RiskAssessmentForm farm={selectedFarm} />
+          </motion.div>
         ) : (
-          <div className="text-center py-8">
-            <p>{t.selectFarmForAssessment}</p>
-          </div>
+          <motion.div 
+            className="text-center py-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <AlertTriangle className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <p className="text-lg text-muted-foreground">{t.selectFarmForAssessment}</p>
+          </motion.div>
         );
       
       case "training":
-        return <TrainingModules farmType={selectedFarm?.farm_type} />;
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <TrainingModules farmType={selectedFarm?.farm_type} />
+          </motion.div>
+        );
       
       case "compliance":
         return selectedFarm ? (
-          <ComplianceTracker farm={selectedFarm} />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ComplianceTracker farm={selectedFarm} />
+          </motion.div>
         ) : (
-          <div className="text-center py-8">
-            <p>{t.selectFarmForCompliance}</p>
-          </div>
+          <motion.div 
+            className="text-center py-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <CheckCircle className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <p className="text-lg text-muted-foreground">{t.selectFarmForCompliance}</p>
+          </motion.div>
         );
       
       case "alerts":
-        return <AlertsPanel farmType={selectedFarm?.farm_type} location={selectedFarm?.location} />;
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <AlertsPanel farmType={selectedFarm?.farm_type} location={selectedFarm?.location} />
+          </motion.div>
+        );
       
       default:
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{t.totalFarms}</CardTitle>
-                  <Tractor className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{farms.length}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{t.riskScore}</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-success">Good</div>
-                  <Progress value={75} className="mt-2" />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{t.trainingProgress}</CardTitle>
-                  <BookOpen className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">60%</div>
-                  <Progress value={60} className="mt-2" />
-                </CardContent>
-              </Card>
+          <motion.div 
+            className="space-y-8"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            {/* Enhanced Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                title={t.totalFarms}
+                value={farms.length}
+                icon={<Tractor className="h-5 w-5 text-blue-500" />}
+                trend={{ value: 12, isPositive: true }}
+                delay={0}
+              />
+              
+              <StatCard
+                title={t.riskScore}
+                value="Good"
+                icon={<Shield className="h-5 w-5 text-green-500" />}
+                progress={75}
+                delay={0.1}
+              />
+              
+              <StatCard
+                title={t.trainingProgress}
+                value="60%"
+                icon={<BookOpen className="h-5 w-5 text-purple-500" />}
+                progress={60}
+                delay={0.2}
+              />
+              
+              <StatCard
+                title="Active Alerts"
+                value="2"
+                icon={<Bell className="h-5 w-5 text-orange-500" />}
+                trend={{ value: -25, isPositive: true }}
+                delay={0.3}
+              />
             </div>
 
-            <Card>
+            {/* Progress Rings Section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <AnimatedCard delay={0.4}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-accent" />
+                    Biosecurity Score
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center">
+                  <ProgressRing progress={85} size={100} color="#10b981" />
+                </CardContent>
+              </AnimatedCard>
+
+              <AnimatedCard delay={0.5}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-accent" />
+                    Compliance Rate
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center">
+                  <ProgressRing progress={78} size={100} color="#3b82f6" />
+                </CardContent>
+              </AnimatedCard>
+
+              <AnimatedCard delay={0.6}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-accent" />
+                    Training Completion
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center">
+                  <ProgressRing progress={60} size={100} color="#8b5cf6" />
+                </CardContent>
+              </AnimatedCard>
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <AnimatedCard delay={0.7}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-accent" />
+                    Risk Assessment Trends
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TrendChart
+                    data={[
+                      { date: "Jan", value: 65 },
+                      { date: "Feb", value: 72 },
+                      { date: "Mar", value: 68 },
+                      { date: "Apr", value: 75 },
+                      { date: "May", value: 82 },
+                      { date: "Jun", value: 78 }
+                    ]}
+                  />
+                </CardContent>
+              </AnimatedCard>
+
+              <AnimatedCard delay={0.8}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-accent" />
+                    Farm Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <BarChart
+                    data={[
+                      { label: "Biosecurity", value: 85, color: "bg-green-500" },
+                      { label: "Compliance", value: 78, color: "bg-blue-500" },
+                      { label: "Training", value: 60, color: "bg-purple-500" },
+                      { label: "Equipment", value: 92, color: "bg-orange-500" }
+                    ]}
+                  />
+                </CardContent>
+              </AnimatedCard>
+            </div>
+
+            {/* Enhanced Farms Section */}
+            <AnimatedCard delay={0.9}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  {t.myFarms}
-                  <Button size="sm" onClick={() => navigate('/farms')}>
+                  <div className="flex items-center gap-2">
+                    <Tractor className="h-5 w-5 text-accent" />
+                    {t.myFarms}
+                  </div>
+                  <Button size="sm" onClick={() => navigate('/farms')} className="bg-accent hover:bg-accent/90">
                     <Plus className="h-4 w-4 mr-2" />
                     {t.addFarm}
                   </Button>
@@ -163,52 +308,125 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
               </CardHeader>
               <CardContent>
                 {farms.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Tractor className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">{t.noFarmsTitle}</h3>
-                    <p className="text-muted-foreground mb-4">{t.noFarmsSubtitle}</p>
-                    <Button onClick={() => navigate('/farms')}>
-                      <Plus className="h-4 w-4 mr-2" />
+                  <motion.div 
+                    className="text-center py-12"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1 }}
+                  >
+                    <Tractor className="h-16 w-16 mx-auto text-muted-foreground mb-6" />
+                    <h3 className="text-xl font-semibold mb-3">{t.noFarmsTitle}</h3>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">{t.noFarmsSubtitle}</p>
+                    <Button onClick={() => navigate('/farms')} size="lg" className="bg-accent hover:bg-accent/90">
+                      <Plus className="h-5 w-5 mr-2" />
                       {t.registerFarm}
                     </Button>
-                  </div>
+                  </motion.div>
                 ) : (
-                  <div className="space-y-4">
-                    {farms.map((farm) => (
-                      <div 
-                        key={farm.id} 
-                        className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                          selectedFarm?.id === farm.id ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+                  <motion.div 
+                    className="space-y-4"
+                    variants={staggerContainer}
+                    initial="initial"
+                    animate="animate"
+                  >
+                    {farms.map((farm, index) => (
+                      <motion.div
+                        key={farm.id}
+                        variants={fadeInUp}
+                        className={`p-6 border rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                          selectedFarm?.id === farm.id 
+                            ? 'border-accent bg-accent/5 shadow-lg' 
+                            : 'hover:bg-muted/50 hover:border-accent/50'
                         }`}
                         onClick={() => setSelectedFarm(farm)}
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.98 }}
                       >
                         <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold">{farm.name}</h4>
-                            <p className="text-sm text-muted-foreground">{farm.location}</p>
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-accent/10 rounded-lg">
+                              <Tractor className="h-6 w-6 text-accent" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-lg">{farm.name}</h4>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <MapPin className="h-4 w-4" />
+                                {farm.location}
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <Badge variant="outline" className="mb-2">
+                          <div className="text-right space-y-2">
+                            <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
                               {farm.farm_type}
                             </Badge>
-                            <p className="text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Users className="h-4 w-4" />
                               {farm.animal_count} {t.animals}
-                            </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
-                  </div>
+                  </motion.div>
                 )}
               </CardContent>
-            </Card>
-          </div>
+            </AnimatedCard>
+
+            {/* Quick Actions */}
+            <AnimatedCard delay={1}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-accent" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Button 
+                    variant="outline" 
+                    className="h-20 flex-col gap-2 hover:bg-accent/10 hover:border-accent"
+                    onClick={() => setActiveTab("assessment")}
+                  >
+                    <AlertTriangle className="h-6 w-6 text-orange-500" />
+                    <span>Risk Assessment</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-20 flex-col gap-2 hover:bg-accent/10 hover:border-accent"
+                    onClick={() => setActiveTab("training")}
+                  >
+                    <BookOpen className="h-6 w-6 text-blue-500" />
+                    <span>Training</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-20 flex-col gap-2 hover:bg-accent/10 hover:border-accent"
+                    onClick={() => setActiveTab("compliance")}
+                  >
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                    <span>Compliance</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </AnimatedCard>
+          </motion.div>
         );
     }
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <DashboardLayout
+        title={t.title}
+        user={user}
+        sidebarItems={sidebarItems}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onSignOut={handleSignOut}
+      >
+        <DashboardSkeleton />
+      </DashboardLayout>
+    );
   }
 
   return (

@@ -21,11 +21,31 @@ const Header = () => {
 
           <nav className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-foreground hover:text-primary transition-colors">Features</a>
-            <a href="#pricing" className="text-foreground hover:text-primary transition-colors">Pricing</a>
-            <a href="#about" className="text-foreground hover:text-primary transition-colors">About</a>
+            <button 
+              onClick={() => navigate('/pricing')} 
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Pricing
+            </button>
+            <button 
+              onClick={() => navigate('/about')} 
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              About
+            </button>
             <a href="#testimonials" className="text-foreground hover:text-primary transition-colors">Testimonials</a>
-            <a href="#faq" className="text-foreground hover:text-primary transition-colors">FAQ</a>
-            <a href="#contact" className="text-foreground hover:text-primary transition-colors">Contact</a>
+            <button 
+              onClick={() => navigate('/faq')} 
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              FAQ
+            </button>
+            <button 
+              onClick={() => navigate('/contact')} 
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Contact
+            </button>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -46,11 +66,31 @@ const Header = () => {
           <nav className="md:hidden mt-4 pb-4 border-t pt-4">
             <div className="flex flex-col gap-2">
               <a href="#features" className="text-foreground hover:text-primary transition-colors py-2">Features</a>
-              <a href="#pricing" className="text-foreground hover:text-primary transition-colors py-2">Pricing</a>
-              <a href="#about" className="text-foreground hover:text-primary transition-colors py-2">About</a>
+              <button 
+                onClick={() => navigate('/pricing')} 
+                className="text-foreground hover:text-primary transition-colors py-2 text-left"
+              >
+                Pricing
+              </button>
+              <button 
+                onClick={() => navigate('/about')} 
+                className="text-foreground hover:text-primary transition-colors py-2 text-left"
+              >
+                About
+              </button>
               <a href="#testimonials" className="text-foreground hover:text-primary transition-colors py-2">Testimonials</a>
-              <a href="#faq" className="text-foreground hover:text-primary transition-colors py-2">FAQ</a>
-              <a href="#contact" className="text-foreground hover:text-primary transition-colors py-2">Contact</a>
+              <button 
+                onClick={() => navigate('/faq')} 
+                className="text-foreground hover:text-primary transition-colors py-2 text-left"
+              >
+                FAQ
+              </button>
+              <button 
+                onClick={() => navigate('/contact')} 
+                className="text-foreground hover:text-primary transition-colors py-2 text-left"
+              >
+                Contact
+              </button>
             </div>
           </nav>
         )}
