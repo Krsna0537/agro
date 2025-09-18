@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,9 @@ interface RegulatorDashboardProps {
 const RegulatorDashboard = ({ user }: RegulatorDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
+  const [recentAssessments, setRecentAssessments] = useState<any[]>([]);
 
   const handleSignOut = async () => {
     try {
@@ -51,7 +54,23 @@ const RegulatorDashboard = ({ user }: RegulatorDashboardProps) => {
               <CardTitle>Alert Management</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Create, publish, and retire alerts (coming soon).</p>
+              {loading ? (
+                <p>Loading...</p>
+              ) : (
+                <div className="space-y-3">
+                  {activeAlerts.map((a) => (
+                    <div key={a.id} className="p-4 border rounded-lg">
+                      <div className="font-medium">[{a.severity.toUpperCase()}] {a.title}</div>
+                      <div className="text-sm text-muted-foreground">{a.location ?? 'All regions'} • {a.farm_type ?? 'All'} • {new Date(a.created_at).toLocaleString()}</div>
+                      <div className="text-sm">{a.message}</div>
+                    </div>
+                  ))}
+                  {activeAlerts.length === 0 && <p className="text-muted-foreground">No active alerts.</p>}
+                </div>
+              )}
+              <div className="mt-4">
+                <Button size="sm" onClick={() => navigate('/admin/alerts')}>Manage Alerts</Button>
+              </div>
             </CardContent>
           </Card>
         );
@@ -87,7 +106,7 @@ const RegulatorDashboard = ({ user }: RegulatorDashboardProps) => {
                   <CardTitle>Active Alerts</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">3</div>
+                  <div className="text-2xl font-bold">{activeAlerts.length}</div>
                   <p className="text-muted-foreground">Require attention</p>
                 </CardContent>
               </Card>
@@ -105,7 +124,7 @@ const RegulatorDashboard = ({ user }: RegulatorDashboardProps) => {
                   <CardTitle>Risk Assessments</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">156</div>
+                  <div className="text-2xl font-bold">{recentAssessments.length}</div>
                   <p className="text-muted-foreground">This quarter</p>
                 </CardContent>
               </Card>
@@ -116,13 +135,49 @@ const RegulatorDashboard = ({ user }: RegulatorDashboardProps) => {
                 <CardTitle>Regional Overview</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Regulator dashboard features coming soon...</p>
+                <div className="space-y-3">
+                  {recentAssessments.map(r => (
+                    <div key={r.id} className="p-4 border rounded-lg">
+                      <div className="font-medium">Assessment {r.id.slice(0,8)} • {r.status}</div>
+                      <div className="text-sm text-muted-foreground">Risk: {r.risk_score ?? '-'} • Farm {r.farm_id.slice(0,8)} • {new Date(r.created_at).toLocaleString()}</div>
+                    </div>
+                  ))}
+                  {recentAssessments.length === 0 && <p className="text-muted-foreground">No recent assessments.</p>}
+                </div>
               </CardContent>
             </Card>
           </div>
         );
     }
   };
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const { data: alerts } = await supabase
+          .from('alerts')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(25);
+        setActiveAlerts(alerts || []);
+
+        const { data: assessments } = await supabase
+          .from('biosecurity_assessments')
+          .select('id, farm_id, status, risk_score, created_at')
+          .order('created_at', { ascending: false })
+          .limit(25);
+        setRecentAssessments(assessments || []);
+      } catch (e) {
+        console.error(e);
+        toast.error('Failed to load regulator data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   return (
     <DashboardLayout

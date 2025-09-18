@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CheckCircle, XCircle, AlertCircle, FileText } from "lucide-react";
+import { farmerDict, farmerLanguages, FarmerLocale } from "./dashboards/farmer.i18n";
 
 interface Farm {
   id: string;
@@ -26,50 +27,52 @@ interface ComplianceTrackerProps {
   farm: Farm;
 }
 
-const complianceItems = {
+const getComplianceItems = (t: any) => ({
   pig: [
-    "Biosecurity plan documented and updated",
-    "Visitor access control and log maintained",
-    "Vehicle disinfection protocols implemented",
-    "Feed storage meets safety standards",
-    "Water quality testing conducted monthly",
-    "Waste management system operational",
-    "Staff trained in biosecurity protocols",
-    "Emergency response procedures established",
-    "Record keeping system maintained",
-    "Regular veterinary health checks scheduled"
+    t.biosecurityPlanDocumented,
+    t.visitorAccessControl,
+    t.vehicleDisinfection,
+    t.feedStorageSafety,
+    t.waterQualityTesting,
+    t.wasteManagementSystem,
+    t.staffTrainedBiosecurity,
+    t.emergencyResponseProcedures,
+    t.recordKeepingSystem,
+    t.veterinaryHealthChecks
   ],
   poultry: [
-    "Biosecurity plan documented and updated",
-    "Access control measures for all entry points",
-    "Footbath disinfection at farm entrance",
-    "Feed storage protected from contamination",
-    "Water system cleaned and tested regularly",
-    "Proper disposal of dead birds",
-    "Staff hygiene protocols followed",
-    "Wild bird exclusion measures implemented",
-    "Vaccination schedule maintained",
-    "Health monitoring records updated"
+    t.biosecurityPlanDocumented,
+    t.accessControlMeasures,
+    t.footbathDisinfection,
+    t.feedStorageProtected,
+    t.waterSystemCleaned,
+    t.properDisposalDeadBirds,
+    t.staffHygieneProtocols,
+    t.wildBirdExclusion,
+    t.vaccinationSchedule,
+    t.healthMonitoringRecords
   ],
   mixed: [
-    "Comprehensive biosecurity plan for all species",
-    "Species separation protocols maintained",
-    "Cross-contamination prevention measures",
-    "Unified visitor control system",
-    "Equipment disinfection between areas",
-    "Feed storage segregated by species",
-    "Water quality monitoring for all systems",
-    "Integrated waste management system",
-    "Staff training for multi-species operations",
-    "Veterinary oversight for all animals"
+    t.comprehensiveBiosecurityPlan,
+    t.speciesSeparationProtocols,
+    t.crossContaminationPrevention,
+    t.unifiedVisitorControl,
+    t.equipmentDisinfection,
+    t.feedStorageSegregated,
+    t.waterQualityMonitoring,
+    t.integratedWasteManagement,
+    t.staffTrainingMultiSpecies,
+    t.veterinaryOversight
   ]
-};
+});
 
 const ComplianceTracker = ({ farm }: ComplianceTrackerProps) => {
   const [records, setRecords] = useState<ComplianceRecord[]>([]);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [locale, setLocale] = useState<FarmerLocale>(() => (localStorage.getItem('farmer_locale') as FarmerLocale) || 'en');
+  const t = farmerDict[locale];
 
   useEffect(() => {
     fetchComplianceRecords();
@@ -86,7 +89,7 @@ const ComplianceTracker = ({ farm }: ComplianceTrackerProps) => {
       if (error) throw error;
       setRecords(data || []);
     } catch (error: any) {
-      toast.error('Error loading compliance records');
+      toast.error(t.errorLoadingCompliance);
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -113,9 +116,9 @@ const ComplianceTracker = ({ farm }: ComplianceTrackerProps) => {
       if (error) throw error;
       
       fetchComplianceRecords();
-      toast.success('Compliance status updated');
+      toast.success(t.complianceStatusUpdated);
     } catch (error: any) {
-      toast.error('Error updating compliance');
+      toast.error(t.errorUpdatingCompliance);
       console.error('Error:', error);
     } finally {
       setUpdating(null);
@@ -128,6 +131,7 @@ const ComplianceTracker = ({ farm }: ComplianceTrackerProps) => {
   };
 
   const getComplianceRate = () => {
+    const complianceItems = getComplianceItems(t);
     const items = complianceItems[farm.farm_type as keyof typeof complianceItems] || [];
     const compliantCount = items.filter(item => {
       const record = getItemStatus(item);
@@ -137,18 +141,39 @@ const ComplianceTracker = ({ farm }: ComplianceTrackerProps) => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading compliance tracker...</div>;
+    return <div className="text-center py-8">{t.loadingComplianceTracker}</div>;
   }
 
+  const complianceItems = getComplianceItems(t);
   const items = complianceItems[farm.farm_type as keyof typeof complianceItems] || [];
   const complianceRate = getComplianceRate();
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">{t.complianceStatus}</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Language:</span>
+          <select
+            className="border rounded-md p-1 bg-background"
+            value={locale}
+            onChange={(e) => {
+              const next = e.target.value as FarmerLocale;
+              setLocale(next);
+              localStorage.setItem('farmer_locale', next);
+            }}
+          >
+            {farmerLanguages.map((l) => (
+              <option key={l.code} value={l.code}>{l.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Compliance Status - {farm.name}</span>
+            <span>{t.complianceStatus} - {farm.name}</span>
             <Badge 
               variant={complianceRate >= 90 ? "default" : complianceRate >= 70 ? "secondary" : "destructive"}
               className="text-lg px-3 py-1"
@@ -161,18 +186,18 @@ const ComplianceTracker = ({ farm }: ComplianceTrackerProps) => {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-success" />
-              <span>{items.filter(item => getItemStatus(item)?.is_compliant).length} Compliant</span>
+              <span>{items.filter(item => getItemStatus(item)?.is_compliant).length} {t.compliant}</span>
             </div>
             <div className="flex items-center gap-2">
               <XCircle className="h-4 w-4 text-destructive" />
               <span>{items.filter(item => {
                 const status = getItemStatus(item);
                 return status && !status.is_compliant;
-              }).length} Non-compliant</span>
+              }).length} {t.nonCompliant}</span>
             </div>
             <div className="flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-warning" />
-              <span>{items.filter(item => !getItemStatus(item)).length} Pending</span>
+              <span>{items.filter(item => !getItemStatus(item)).length} {t.pending}</span>
             </div>
           </div>
         </CardContent>
@@ -204,7 +229,7 @@ const ComplianceTracker = ({ farm }: ComplianceTrackerProps) => {
                       
                       {status && (
                         <div className="ml-8 mt-2 text-sm text-muted-foreground">
-                          Last checked: {new Date(status.checked_at).toLocaleDateString()}
+                          {t.lastChecked}: {new Date(status.checked_at).toLocaleDateString()}
                         </div>
                       )}
                     </div>
@@ -222,7 +247,7 @@ const ComplianceTracker = ({ farm }: ComplianceTrackerProps) => {
 
                   <div className="ml-8 space-y-2">
                     <Textarea
-                      placeholder="Add notes about compliance status..."
+                      placeholder={t.addNotes}
                       value={notes[item] || status?.notes || ''}
                       onChange={(e) => setNotes(prev => ({
                         ...prev,
@@ -238,7 +263,7 @@ const ComplianceTracker = ({ farm }: ComplianceTrackerProps) => {
                         disabled={isUpdating}
                       >
                         <FileText className="h-3 w-3 mr-1" />
-                        {isUpdating ? 'Saving...' : 'Save Notes'}
+                        {isUpdating ? t.saving : t.saveNotes}
                       </Button>
                     )}
                   </div>

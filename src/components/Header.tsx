@@ -14,15 +14,17 @@ const Header = () => {
           <div className="flex items-center gap-2">
             <Shield className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-xl font-bold text-foreground">FarmGuard</h1>
-              <p className="text-xs text-muted-foreground">Biosecurity Management</p>
+              <h1 className="text-xl font-bold text-foreground">AgroGuard Shield</h1>
+              <p className="text-xs text-muted-foreground">Advanced Biosecurity Management</p>
             </div>
           </div>
 
           <nav className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-foreground hover:text-primary transition-colors">Features</a>
-            <a href="#roles" className="text-foreground hover:text-primary transition-colors">User Roles</a>
-            <a href="#training" className="text-foreground hover:text-primary transition-colors">Training</a>
+            <a href="#pricing" className="text-foreground hover:text-primary transition-colors">Pricing</a>
+            <a href="#about" className="text-foreground hover:text-primary transition-colors">About</a>
+            <a href="#testimonials" className="text-foreground hover:text-primary transition-colors">Testimonials</a>
+            <a href="#faq" className="text-foreground hover:text-primary transition-colors">FAQ</a>
             <a href="#contact" className="text-foreground hover:text-primary transition-colors">Contact</a>
           </nav>
 
@@ -44,8 +46,10 @@ const Header = () => {
           <nav className="md:hidden mt-4 pb-4 border-t pt-4">
             <div className="flex flex-col gap-2">
               <a href="#features" className="text-foreground hover:text-primary transition-colors py-2">Features</a>
-              <a href="#roles" className="text-foreground hover:text-primary transition-colors py-2">User Roles</a>
-              <a href="#training" className="text-foreground hover:text-primary transition-colors py-2">Training</a>
+              <a href="#pricing" className="text-foreground hover:text-primary transition-colors py-2">Pricing</a>
+              <a href="#about" className="text-foreground hover:text-primary transition-colors py-2">About</a>
+              <a href="#testimonials" className="text-foreground hover:text-primary transition-colors py-2">Testimonials</a>
+              <a href="#faq" className="text-foreground hover:text-primary transition-colors py-2">FAQ</a>
               <a href="#contact" className="text-foreground hover:text-primary transition-colors py-2">Contact</a>
             </div>
           </nav>

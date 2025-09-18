@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,10 @@ interface ExtensionWorkerDashboardProps {
 const ExtensionWorkerDashboard = ({ user }: ExtensionWorkerDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [farmers, setFarmers] = useState<Array<{ user_id: string; first_name: string; last_name: string; location: string | null }>>([]);
+  const [modules, setModules] = useState<any[]>([]);
+  const [progress, setProgress] = useState<any[]>([]);
 
   const handleSignOut = async () => {
     try {
@@ -40,7 +44,19 @@ const ExtensionWorkerDashboard = ({ user }: ExtensionWorkerDashboardProps) => {
               <CardTitle>Farmers</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Manage and support assigned farmers (coming soon).</p>
+              {loading ? (
+                <p>Loading...</p>
+              ) : (
+                <div className="space-y-3">
+                  {farmers.map((f) => (
+                    <div key={f.user_id} className="p-4 border rounded-lg">
+                      <div className="font-medium">{f.first_name} {f.last_name}</div>
+                      <div className="text-sm text-muted-foreground">{f.location ?? 'Location not set'}</div>
+                    </div>
+                  ))}
+                  {farmers.length === 0 && <p className="text-muted-foreground">No farmers found.</p>}
+                </div>
+              )}
             </CardContent>
           </Card>
         );
@@ -51,7 +67,22 @@ const ExtensionWorkerDashboard = ({ user }: ExtensionWorkerDashboardProps) => {
               <CardTitle>Training Content</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Create and publish training modules (coming soon).</p>
+              {loading ? (
+                <p>Loading...</p>
+              ) : (
+                <div className="space-y-3">
+                  {modules.map((m) => (
+                    <div key={m.id} className="p-4 border rounded-lg">
+                      <div className="font-medium">{m.title}</div>
+                      <div className="text-sm text-muted-foreground">{m.farm_type ?? 'All'} • {m.duration_minutes ?? '-'} min • {m.is_published ? 'Published' : 'Draft'}</div>
+                    </div>
+                  ))}
+                  {modules.length === 0 && <p className="text-muted-foreground">No modules yet.</p>}
+                </div>
+              )}
+              <div className="mt-4">
+                <Button size="sm" onClick={() => navigate('/admin/training')}>Create/Manage Modules</Button>
+              </div>
             </CardContent>
           </Card>
         );
@@ -62,7 +93,19 @@ const ExtensionWorkerDashboard = ({ user }: ExtensionWorkerDashboardProps) => {
               <CardTitle>Progress Tracking</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Track completion and engagement metrics (coming soon).</p>
+              {loading ? (
+                <p>Loading...</p>
+              ) : (
+                <div className="space-y-3">
+                  {progress.map((p) => (
+                    <div key={p.id} className="p-4 border rounded-lg">
+                      <div className="font-medium">{p.user_id.slice(0, 8)} • {p.module?.title ?? p.module_id}</div>
+                      <div className="text-sm text-muted-foreground">{p.progress_percentage ?? 0}% • {p.completed ? 'Completed' : 'In Progress'}</div>
+                    </div>
+                  ))}
+                  {progress.length === 0 && <p className="text-muted-foreground">No progress records.</p>}
+                </div>
+              )}
             </CardContent>
           </Card>
         );
@@ -106,13 +149,59 @@ const ExtensionWorkerDashboard = ({ user }: ExtensionWorkerDashboardProps) => {
                 <CardTitle>Recent Activities</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Extension worker dashboard features coming soon...</p>
+                <p className="text-muted-foreground">Latest activity from farmers and training modules will appear here.</p>
               </CardContent>
             </Card>
           </div>
         );
     }
   };
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        // Farmers: all profiles with role farmer
+        const { data: farmerRoles } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'farmer');
+        const farmerIds = (farmerRoles || []).map(r => r.user_id);
+        if (farmerIds.length > 0) {
+          const { data: farmerProfiles } = await supabase
+            .from('profiles')
+            .select('user_id, first_name, last_name, location')
+            .in('user_id', farmerIds);
+          setFarmers(farmerProfiles as any || []);
+        } else {
+          setFarmers([]);
+        }
+
+        // Training modules
+        const { data: moduleRows } = await supabase
+          .from('training_modules')
+          .select('*')
+          .order('created_at', { ascending: false });
+        setModules(moduleRows || []);
+
+        // Training progress with simple join (get module title separately)
+        const { data: progressRows } = await supabase
+          .from('user_training_progress')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(25);
+        // Attach module title
+        const moduleMap = new Map((moduleRows || []).map(m => [m.id, m]));
+        setProgress((progressRows || []).map(r => ({ ...r, module: moduleMap.get(r.module_id) })));
+      } catch (e) {
+        console.error(e);
+        toast.error('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   return (
     <DashboardLayout

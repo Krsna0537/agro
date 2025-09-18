@@ -17,8 +17,8 @@ const Hero = () => {
                 <span className="text-accent"> Advanced Biosecurity</span>
               </h1>
               <p className="text-lg text-primary-foreground/90 max-w-xl">
-                Comprehensive digital platform for implementing, monitoring, and sustaining robust 
-                biosecurity practices in pig and poultry farms.
+                The world's most comprehensive digital platform for implementing, monitoring, and sustaining 
+                robust biosecurity practices in pig and poultry farms. Trusted by 50,000+ farms worldwide.
               </p>
             </div>
 

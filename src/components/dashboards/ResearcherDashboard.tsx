@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FlaskConical, BarChart, FileText, Users } from "lucide-react";
@@ -12,6 +12,8 @@ interface ResearcherDashboardProps {
 
 const ResearcherDashboard = ({ user }: ResearcherDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [loading, setLoading] = useState(false);
+  const [datasets, setDatasets] = useState<any[]>([]);
 
   const handleSignOut = async () => {
     try {
@@ -37,7 +39,19 @@ const ResearcherDashboard = ({ user }: ResearcherDashboardProps) => {
               <CardTitle>Research Data</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Access anonymized datasets and export tools (coming soon).</p>
+              {loading ? (
+                <p>Loading...</p>
+              ) : (
+                <div className="space-y-3">
+                  {datasets.map((d) => (
+                    <div key={d.id} className="p-4 border rounded-lg">
+                      <div className="font-medium">Assessment {d.id.slice(0,8)} • Risk {d.risk_score ?? '-'}</div>
+                      <div className="text-sm text-muted-foreground">Farm {d.farm_id.slice(0,8)} • {new Date(d.created_at).toLocaleString()}</div>
+                    </div>
+                  ))}
+                  {datasets.length === 0 && <p className="text-muted-foreground">No anonymized data available.</p>}
+                </div>
+              )}
             </CardContent>
           </Card>
         );
@@ -101,13 +115,33 @@ const ResearcherDashboard = ({ user }: ResearcherDashboardProps) => {
                 <CardTitle>Research Projects</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Researcher dashboard features coming soon...</p>
+                <p className="text-muted-foreground">Researcher dashboard features will appear here.</p>
               </CardContent>
             </Card>
           </div>
         );
     }
   };
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const { data } = await supabase
+          .from('biosecurity_assessments')
+          .select('id, farm_id, risk_score, created_at, status')
+          .order('created_at', { ascending: false })
+          .limit(50);
+        setDatasets(data || []);
+      } catch (e) {
+        console.error(e);
+        toast.error('Failed to load research dataset');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   return (
     <DashboardLayout
