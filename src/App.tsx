@@ -14,8 +14,11 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
 import Pricing from "./pages/Pricing";
+import AlertsCenter from "./pages/AlertsCenter";
+import TrainingModuleDetail from "./pages/TrainingModuleDetail";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import RoleGuard from "@/components/auth/RoleGuard";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 
 const queryClient = new QueryClient();
 
@@ -25,13 +28,16 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
+        <ThemeProvider>
+          <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/alerts" element={<AlertsCenter user={undefined as any} />} />
+          <Route path="/training/:id" element={<TrainingModuleDetail />} />
           <Route
             path="/dashboard"
             element={
@@ -71,6 +77,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </ThemeProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

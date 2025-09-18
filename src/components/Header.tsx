@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Shield, Menu } from "lucide-react";
+import { Shield, Menu, Bell } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -49,6 +50,10 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <Button variant="ghost" size="icon" onClick={() => navigate('/alerts')} aria-label="Alerts">
+              <Bell className="h-5 w-5" />
+            </Button>
             <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>Sign In</Button>
             <Button size="sm" onClick={() => navigate('/auth')}>Get Started</Button>
             <Button

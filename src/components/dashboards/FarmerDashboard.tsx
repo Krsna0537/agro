@@ -37,6 +37,8 @@ import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
 import { ProgressRing } from "@/components/ui/progress-ring";
 import { MetricCard, BarChart, TrendChart } from "@/components/ui/data-visualization";
 import { fadeInUp, staggerContainer, slideInFromTop } from "@/lib/animations";
+import { exportToCsv } from "@/lib/export";
+import { useSavedView } from "@/hooks/useSavedView";
 
 interface Farm {
   id: string;
@@ -58,6 +60,7 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
   const navigate = useNavigate();
   const [locale, setLocale] = useState<FarmerLocale>(() => (localStorage.getItem('farmer_locale') as FarmerLocale) || 'en');
   const t = farmerDict[locale];
+  const { views, create, remove } = useSavedView<{ selectedFarmId: string | null; tab: string }>(`farmer:${user.id}`);
 
   useEffect(() => {
     fetchFarms();
@@ -292,7 +295,7 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
               </AnimatedCard>
             </div>
 
-            {/* Enhanced Farms Section */}
+            {/* Enhanced Farms Section + Saved Views + Export */}
             <AnimatedCard delay={0.9}>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -300,13 +303,33 @@ const FarmerDashboard = ({ user }: FarmerDashboardProps) => {
                     <Tractor className="h-5 w-5 text-accent" />
                     {t.myFarms}
                   </div>
-                  <Button size="sm" onClick={() => navigate('/farms')} className="bg-accent hover:bg-accent/90">
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t.addFarm}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => exportToCsv('farms', farms.map(f => ({ id: f.id, name: f.name, type: f.farm_type, location: f.location, animals: f.animal_count }))) }>Export CSV</Button>
+                    <Button variant="outline" size="sm" onClick={() => create(`View ${views.length + 1}`, { selectedFarmId: selectedFarm?.id ?? null, tab: activeTab })}>Save View</Button>
+                    <Button size="sm" onClick={() => navigate('/farms')} className="bg-accent hover:bg-accent/90">
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t.addFarm}
+                    </Button>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {views.length > 0 && (
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {views.map(v => (
+                      <div key={v.id} className="flex items-center gap-2 border rounded-full px-3 py-1 text-sm">
+                        <button className="underline" onClick={() => {
+                          setActiveTab(v.payload.tab);
+                          if (v.payload.selectedFarmId) {
+                            const f = farms.find(ff => ff.id === v.payload.selectedFarmId) || null;
+                            setSelectedFarm(f);
+                          }
+                        }}>{v.name}</button>
+                        <button onClick={() => remove(v.id)} aria-label="Remove view">×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {farms.length === 0 ? (
                   <motion.div 
                     className="text-center py-12"

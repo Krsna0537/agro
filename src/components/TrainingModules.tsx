@@ -1,11 +1,15 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { BookOpen, Clock, CheckCircle, Play } from "lucide-react";
+import { BookOpen, Clock, CheckCircle, Play, Filter, Search, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
+import { useNavigate } from "react-router-dom";
 
 interface TrainingModule {
   id: string;
@@ -26,6 +30,10 @@ interface TrainingModulesProps {
 const TrainingModules = ({ farmType }: TrainingModulesProps) => {
   const [modules, setModules] = useState<TrainingModule[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState<string>("all");
+  const [sort, setSort] = useState<string>("recent");
 
   useEffect(() => {
     fetchModules();
@@ -94,8 +102,40 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
     }
   };
 
+  const completeModule = async (moduleId: string) => {
+    try {
+      const user = await supabase.auth.getUser();
+      if (!user.data.user) return;
+      const { error } = await supabase
+        .from('user_training_progress')
+        .upsert({
+          user_id: user.data.user.id,
+          module_id: moduleId,
+          progress_percentage: 100,
+          completed: true
+        });
+      if (error) throw error;
+      toast.success('Marked as completed');
+      fetchModules();
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to mark completed');
+    }
+  };
+
+  const filtered = useMemo(() => {
+    let rows = modules.filter(m =>
+      (q.trim() === '' || m.title.toLowerCase().includes(q.toLowerCase()) || m.description.toLowerCase().includes(q.toLowerCase())) &&
+      (status === 'all' || (status === 'completed' ? m.progress?.completed : !m.progress?.completed))
+    );
+    if (sort === 'recent') rows = rows; // already sorted by created_at desc
+    if (sort === 'short') rows = [...rows].sort((a,b) => (a.duration_minutes||0) - (b.duration_minutes||0));
+    if (sort === 'long') rows = [...rows].sort((a,b) => (b.duration_minutes||0) - (a.duration_minutes||0));
+    return rows;
+  }, [modules, q, status, sort]);
+
   if (loading) {
-    return <div className="text-center py-8">Loading training modules...</div>;
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -106,6 +146,41 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
           {modules.filter(m => m.progress?.completed).length} of {modules.length} completed
         </Badge>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5 text-accent" /> Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input className="pl-9" placeholder="Search modules..." value={q} onChange={(e) => setQ(e.target.value)} />
+            </div>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="inprogress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sort} onValueChange={setSort}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Most Recent</SelectItem>
+                <SelectItem value="short">Shortest First</SelectItem>
+                <SelectItem value="long">Longest First</SelectItem>
+              </SelectContent>
+            </Select>
+            <div />
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6">
         {modules.length === 0 ? (
@@ -119,7 +194,7 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
             </CardContent>
           </Card>
         ) : (
-          modules.map((module) => (
+          filtered.map((module) => (
             <Card key={module.id} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -157,12 +232,22 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
 
                   <div className="flex gap-2">
                     <Button 
-                      onClick={() => startModule(module.id)}
+                      onClick={() => {
+                        startModule(module.id);
+                        navigate(`/training/${module.id}`);
+                      }}
                       variant={module.progress?.progress_percentage > 0 ? "default" : "outline"}
                     >
                       <Play className="h-4 w-4 mr-2" />
                       {module.progress?.progress_percentage > 0 ? "Continue" : "Start"} Module
                     </Button>
+
+                    {module.progress && !module.progress.completed && (
+                      <Button variant="outline" onClick={() => completeModule(module.id)}>
+                        <Check className="h-4 w-4 mr-2" />
+                        Mark Complete
+                      </Button>
+                    )}
                     
                     {module.progress?.completed && (
                       <Badge variant="outline" className="text-success border-success">
