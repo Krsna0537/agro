@@ -9,6 +9,7 @@ import { BookOpen, Clock, CheckCircle, Play, Filter, Search, Check } from "lucid
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface TrainingModule {
   id: string;
@@ -20,6 +21,9 @@ interface TrainingModule {
     progress_percentage: number;
     completed: boolean;
   };
+  // Optional content fields if present in DB
+  content?: string | null;
+  video_url?: string | null;
 }
 
 interface TrainingModulesProps {
@@ -32,6 +36,7 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
   const [sort, setSort] = useState<string>("recent");
+  const [viewing, setViewing] = useState<TrainingModule | null>(null);
 
   useEffect(() => {
     fetchModules();
@@ -81,6 +86,7 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
       const user = await supabase.auth.getUser();
       if (!user.data.user) return;
 
+      // Upsert with composite conflict target; ignore duplicate creation
       const { error } = await supabase
         .from('user_training_progress')
         .upsert({
@@ -88,9 +94,9 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
           module_id: moduleId,
           progress_percentage: 0,
           completed: false
-        });
+        }, { onConflict: 'user_id,module_id', ignoreDuplicates: true });
 
-      if (error) throw error;
+      if (error && (error as any).code !== '23505') throw error;
 
       toast.success('Training module started!');
       fetchModules();
@@ -98,6 +104,11 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
       toast.error('Error starting module');
       console.error('Error:', error);
     }
+  };
+
+  const openModule = async (m: TrainingModule) => {
+    await startModule(m.id);
+    setViewing(m);
   };
 
   const completeModule = async (moduleId: string) => {
@@ -111,7 +122,7 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
           module_id: moduleId,
           progress_percentage: 100,
           completed: true
-        });
+        }, { onConflict: 'user_id,module_id' });
       if (error) throw error;
       toast.success('Marked as completed');
       fetchModules();
@@ -230,7 +241,7 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
 
                   <div className="flex gap-2">
                     <Button 
-                      onClick={() => startModule(module.id)}
+                      onClick={() => openModule(module)}
                       variant={module.progress?.progress_percentage > 0 ? "default" : "outline"}
                     >
                       <Play className="h-4 w-4 mr-2" />
@@ -256,6 +267,44 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
             </Card>
           ))
         )}
+      
+      <Dialog open={!!viewing} onOpenChange={() => setViewing(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              {viewing?.title}
+            </DialogTitle>
+            <DialogDescription className="sr-only">Training module details</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground flex items-center gap-2">
+              <Clock className="h-4 w-4" /> {viewing?.duration_minutes ?? '-'} min
+              {viewing?.farm_type && <Badge variant="secondary">{viewing.farm_type} farms</Badge>}
+            </div>
+            {viewing?.video_url ? (
+              <div className="aspect-video rounded-lg overflow-hidden bg-black">
+                <iframe
+                  src={viewing.video_url}
+                  title="Training Video"
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            ) : null}
+            <div className="max-w-none whitespace-pre-wrap leading-relaxed text-sm">
+              {(() => {
+                const c: any = viewing?.content;
+                if (!c) return viewing?.description || 'No content provided.';
+                if (typeof c === 'string') return c;
+                if (typeof c === 'object' && typeof c.text === 'string') return c.text;
+                return JSON.stringify(c, null, 2);
+              })()}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       </div>
     </div>
   );

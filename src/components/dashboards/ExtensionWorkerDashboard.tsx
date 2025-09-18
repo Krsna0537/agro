@@ -30,6 +30,7 @@ import { AnimatedCard, StatCard } from "@/components/ui/animated-card";
 import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
 import { ProgressRing } from "@/components/ui/progress-ring";
 import { MetricCard, BarChart, TrendChart } from "@/components/ui/data-visualization";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fadeInUp, staggerContainer, slideInFromTop } from "@/lib/animations";
 
 interface ExtensionWorkerDashboardProps {
@@ -43,6 +44,7 @@ const ExtensionWorkerDashboard = ({ user }: ExtensionWorkerDashboardProps) => {
   const [farmers, setFarmers] = useState<Array<{ user_id: string; first_name: string; last_name: string; location: string | null }>>([]);
   const [modules, setModules] = useState<any[]>([]);
   const [progress, setProgress] = useState<any[]>([]);
+  const [viewing, setViewing] = useState<any | null>(null);
 
   const handleSignOut = async () => {
     try {
@@ -225,11 +227,11 @@ const ExtensionWorkerDashboard = ({ user }: ExtensionWorkerDashboardProps) => {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" onClick={() => setViewing(module)}>
                               <Eye className="h-4 w-4 mr-1" />
                               View
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" onClick={() => navigate('/admin/training')}>
                               <Edit className="h-4 w-4 mr-1" />
                               Edit
                             </Button>
@@ -259,6 +261,33 @@ const ExtensionWorkerDashboard = ({ user }: ExtensionWorkerDashboardProps) => {
                 )}
               </CardContent>
             </AnimatedCard>
+
+            <Dialog open={!!viewing} onOpenChange={() => setViewing(null)}>
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    {viewing?.title}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Target className="h-4 w-4" /> {viewing?.farm_type ?? 'All Types'}
+                    <Clock className="h-4 w-4" /> {viewing?.duration_minutes ?? '-'} min
+                    <Badge variant="outline">{viewing?.is_published ? 'Published' : 'Draft'}</Badge>
+                  </div>
+                  <div className="max-w-none whitespace-pre-wrap leading-relaxed text-sm">
+                    {(() => {
+                      const c: any = viewing?.content;
+                      if (!c) return viewing?.description || 'No content provided.';
+                      if (typeof c === 'string') return c;
+                      if (typeof c === 'object' && typeof c.text === 'string') return c.text;
+                      return JSON.stringify(c, null, 2);
+                    })()}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </motion.div>
         );
         

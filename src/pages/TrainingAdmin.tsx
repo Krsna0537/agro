@@ -25,6 +25,31 @@ const TrainingAdmin = () => {
   const [farmType, setFarmType] = useState<"pig" | "poultry" | "mixed" | "">("");
   const [duration, setDuration] = useState<number>(0);
   const [isPublished, setIsPublished] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [content, setContent] = useState<string>("");
+
+  const starterTemplate = (ft: string | "") => `
+Module Overview
+This module introduces essential biosecurity practices for ${ft || 'pig/poultry'} farms. It is designed for quick on‑farm learning.
+
+Learning Objectives
+- Understand farm entry/exit hygiene
+- Learn daily disinfection routines
+- Recognize signs of common diseases and reporting workflows
+
+Checklist
+1. Footbath at all entries and replenish twice daily
+2. Hand hygiene before/after animal contact
+3. Dedicated tools per shed; color‑coded
+4. Visitor log with contact details and purpose
+5. Isolate sick animals and notify veterinarian
+
+Best Practices
+Keep feed/water areas clean, control vectors (rodents, wild birds), and maintain updated vaccination schedules.
+
+Assessment
+After completing, mark the module as complete and create an action list for your farm.
+`;
 
   const load = async () => {
     setLoading(true);
@@ -50,14 +75,21 @@ const TrainingAdmin = () => {
       duration_minutes: duration || null,
       is_published: isPublished,
       created_by: user.id,
-      content: {},
+      // Store content as JSON object to match json/jsonb columns
+      content: ({ text: (content && content.trim().length > 0 ? content : starterTemplate(farmType)) }) as any,
     } as ModuleInsert;
-    await supabase.from('training_modules').insert(payload);
+    const { error } = await supabase.from('training_modules').insert(payload);
+    if (error) {
+      console.error('Create module error:', error);
+      alert(`Failed to create module: ${error.message || 'Unknown error'}`);
+    }
     setTitle("");
     setDescription("");
     setFarmType("");
     setDuration(0);
     setIsPublished(false);
+    setVideoUrl("");
+    setContent("");
     setCreating(false);
     load();
   };
@@ -95,6 +127,17 @@ const TrainingAdmin = () => {
                 <div className="space-y-2 md:col-span-2">
                   <Label>Description</Label>
                   <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Short summary of module" />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Video URL (optional)</Label>
+                  <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://www.youtube.com/embed/...." />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Content (Plain text)</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={() => setContent(starterTemplate(farmType))}>Load Starter Content</Button>
+                  </div>
+                  <Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={10} placeholder="Add learning content here (plain text; use blank lines for paragraphs, '-' for bullets, '1.' for numbered points)" />
                 </div>
                 <div className="space-y-2">
                   <Label>Duration (minutes)</Label>
