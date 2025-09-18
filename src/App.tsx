@@ -15,7 +15,6 @@ import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
 import Pricing from "./pages/Pricing";
 import AlertsCenter from "./pages/AlertsCenter";
-import TrainingModuleDetail from "./pages/TrainingModuleDetail";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import RoleGuard from "@/components/auth/RoleGuard";
 import { ThemeProvider } from "@/providers/ThemeProvider";
@@ -37,7 +36,6 @@ const App = () => (
           <Route path="/faq" element={<FAQ />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/alerts" element={<AlertsCenter user={undefined as any} />} />
-          <Route path="/training/:id" element={<TrainingModuleDetail />} />
           <Route
             path="/dashboard"
             element={

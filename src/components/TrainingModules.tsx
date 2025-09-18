@@ -9,7 +9,6 @@ import { BookOpen, Clock, CheckCircle, Play, Filter, Search, Check } from "lucid
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
-import { useNavigate } from "react-router-dom";
 
 interface TrainingModule {
   id: string;
@@ -30,7 +29,6 @@ interface TrainingModulesProps {
 const TrainingModules = ({ farmType }: TrainingModulesProps) => {
   const [modules, setModules] = useState<TrainingModule[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
   const [sort, setSort] = useState<string>("recent");
@@ -232,10 +230,7 @@ const TrainingModules = ({ farmType }: TrainingModulesProps) => {
 
                   <div className="flex gap-2">
                     <Button 
-                      onClick={() => {
-                        startModule(module.id);
-                        navigate(`/training/${module.id}`);
-                      }}
+                      onClick={() => startModule(module.id)}
                       variant={module.progress?.progress_percentage > 0 ? "default" : "outline"}
                     >
                       <Play className="h-4 w-4 mr-2" />
