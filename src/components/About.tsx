@@ -65,32 +65,7 @@ const About = () => {
     }
   ];
 
-  const team = [
-    {
-      name: "Dr. Sarah Wilson",
-      role: "Chief Executive Officer",
-      expertise: "Veterinary Medicine, 15+ years",
-      image: "/api/placeholder/80/80"
-    },
-    {
-      name: "Rajesh Kumar",
-      role: "Chief Technology Officer",
-      expertise: "Agricultural Technology, 12+ years",
-      image: "/api/placeholder/80/80"
-    },
-    {
-      name: "Dr. Priya Sharma",
-      role: "Head of Veterinary Services",
-      expertise: "Livestock Health, 18+ years",
-      image: "/api/placeholder/80/80"
-    },
-    {
-      name: "Amit Patel",
-      role: "Head of Product",
-      expertise: "Farm Management Systems, 10+ years",
-      image: "/api/placeholder/80/80"
-    }
-  ];
+  
 
   return (
     <section id="about" className="py-20 bg-muted/30">
@@ -202,49 +177,7 @@ const About = () => {
           </div>
         </div>
 
-        {/* Team Section */}
-        <div className="mb-16">
-          <h3 className="text-2xl font-bold text-center mb-8">Meet Our Team</h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {team.map((member, index) => (
-              <Card key={index} className="text-center hover:shadow-card transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                    <span className="text-2xl font-bold text-muted-foreground">
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-1">{member.name}</h4>
-                  <p className="text-sm text-accent mb-2">{member.role}</p>
-                  <p className="text-xs text-muted-foreground">{member.expertise}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Stats Section */}
-        <div className="bg-gradient-to-r from-primary to-accent rounded-lg p-8 text-white text-center">
-          <h3 className="text-2xl font-bold mb-8">Our Impact in Numbers</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
-              <div className="text-3xl font-bold mb-2">50,000+</div>
-              <div className="text-sm opacity-90">Farms Protected</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold mb-2">98%</div>
-              <div className="text-sm opacity-90">Disease Prevention Rate</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold mb-2">25+</div>
-              <div className="text-sm opacity-90">Countries Served</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold mb-2">99.9%</div>
-              <div className="text-sm opacity-90">Uptime</div>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </section>
   );
